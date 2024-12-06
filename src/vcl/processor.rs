@@ -9,7 +9,7 @@ use std::ffi::{c_char, c_int, c_void};
 use std::ptr;
 
 use crate::vcl::ctx::Ctx;
-use varnish_sys::{objcore, vdp_ctx, vfp_ctx, vfp_entry};
+use varnish_sys::{vdp_ctx, vfp_ctx, vfp_entry};
 
 /// passed to [`VDP::push`] to describe special conditions occuring in the pipeline.
 #[derive(Debug, Copy, Clone)]
@@ -60,7 +60,7 @@ where
 {
     /// Create a new processor, possibly using knowledge from the pipeline, or from the current
     /// request.
-    fn new(vrt_ctx: &mut Ctx, vdp_ctx: &mut VDPCtx, oc: *mut varnish_sys::objcore) -> InitResult<Self>;
+    fn new(vrt_ctx: &mut Ctx, vdp_ctx: &mut VDPCtx) -> InitResult<Self>;
     /// Handle the data buffer from the previous processor. This function generally uses
     /// [`VDPCtx::push`] to push data to the next processor.
     fn push(&mut self, ctx: &mut VDPCtx, act: PushAction, buf: &[u8]) -> PushResult;
@@ -74,11 +74,10 @@ pub unsafe extern "C" fn gen_vdp_init<T: VDP>(
     vrt_ctx: *const varnish_sys::vrt_ctx,
     ctx_raw: *mut vdp_ctx,
     priv_: *mut *mut c_void,
-    oc: *mut objcore,
 ) -> c_int {
     assert_ne!(priv_, ptr::null_mut());
     assert_eq!(*priv_, ptr::null_mut());
-    match T::new(&mut Ctx::new(vrt_ctx as *mut varnish_sys::vrt_ctx), &mut VDPCtx::new(ctx_raw), oc) {
+    match T::new(&mut Ctx::new(vrt_ctx as *mut varnish_sys::vrt_ctx), &mut VDPCtx::new(ctx_raw)) {
         InitResult::Ok(proc) => {
             *priv_ = Box::into_raw(Box::new(proc)) as *mut c_void;
             0
