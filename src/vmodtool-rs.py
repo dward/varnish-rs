@@ -209,7 +209,7 @@ pub static {csn}: {csn} = {csn} {{""".format(csn = v.csn))
         major = "varnish::vcl::boilerplate::VRT_MAJOR_VERSION"
         minor = "varnish::vcl::boilerplate::VRT_MINOR_VERSION"
 
-    jl = [["$VMOD", "1.0", v.modname, v.csn, v.file_id, abi, major, minor]]
+    jl = [["$VMOD", "2.0", v.modname, v.csn, v.file_id, abi, major, minor]]
     jl.append(["$CPROTO", proto])
     for j in v.contents:
             j.json(jl)
